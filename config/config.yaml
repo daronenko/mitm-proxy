@@ -1,0 +1,21 @@
+devMode: true
+
+app:
+  proxyServer:
+    address: 127.0.0.1:8080
+  
+    tls:
+      keyPath: ./certs/cert.key
+
+  apiServer:
+    address: 127.0.0.1:8000
+
+  logger:
+    traceLevel: true
+    stdoutOnly: true
+    path: log/
+    filename: dump.log
+    maxSize: 100
+    maxAge: 90
+    maxBackups: 5
+    compress: true
