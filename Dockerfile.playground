@@ -19,9 +19,12 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . /app
+COPY . .
 
 RUN cp certs/ca.crt /usr/local/share/ca-certificates/ \
     && update-ca-certificates
 
-CMD ["bash"]
+RUN --mount=type=cache,target="/root/.cache/go-build" \
+    go build -mod=vendor -o ./bin/proxy ./cmd/proxy/main.go
+
+CMD ["./bin/proxy", "--config", "config/config.yaml" ]

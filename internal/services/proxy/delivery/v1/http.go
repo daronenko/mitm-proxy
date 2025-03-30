@@ -5,21 +5,6 @@ import (
 	"net/url"
 )
 
-func copyHeaders(w http.ResponseWriter, src http.Header) {
-	headers := w.Header()
-	for key, values := range src {
-		for _, value := range values {
-			headers.Add(key, value)
-		}
-	}
-}
-
-func copyCookies(w http.ResponseWriter, cookies []*http.Cookie) {
-	for _, cookie := range cookies {
-		http.SetCookie(w, cookie)
-	}
-}
-
 var proxyHeaders = []string{
 	"Proxy-Authenticate",
 	"Proxy-Authorization",
