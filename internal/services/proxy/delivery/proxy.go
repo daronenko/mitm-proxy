@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"math/big"
 	"net"
 	"net/http"
 	"os"
@@ -156,8 +157,17 @@ func (d *Proxy) getTLSConfig(host string) (*tls.Config, error) {
 	certPath := fmt.Sprintf("%s/%s.crt", d.conf.App.ProxyServer.TLS.CertPath, host)
 	certBytes, err := os.ReadFile(certPath)
 	if err != nil {
-		log.Err(err).Msg("failed to read certificate")
-		return nil, fmt.Errorf("read host cert: %w", err)
+		log.Warn().Err(err).Msgf("certificate not found for host '%s', generating...", host)
+
+		certBytes, err = genCert(host, big.NewInt(time.Now().UnixNano()))
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate certificate: %w", err)
+		}
+
+		if err := os.WriteFile(certPath, certBytes, 0644); err != nil {
+			log.Err(err).Msg("failed to write generated certificate to file")
+			return nil, fmt.Errorf("failed to save certificate: %w", err)
+		}
 	}
 
 	d.certCache.Store(host, certBytes)
