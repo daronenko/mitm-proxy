@@ -31,4 +31,4 @@ RUN update-ca-certificates
 EXPOSE 8000
 EXPOSE 8080
 
-ENTRYPOINT [ "/proxy", "--config", "/etc/mitmproxy/config.yaml" ]
+ENTRYPOINT [ "/mitmproxy", "--config", "/etc/mitmproxy/config.yaml" ]
