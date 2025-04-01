@@ -172,7 +172,6 @@ func (d *Proxy) createTLSConfig(certBytes []byte) (*tls.Config, error) {
 	}
 
 	return &tls.Config{
-		Certificates:       []tls.Certificate{cert},
-		InsecureSkipVerify: true,
+		Certificates: []tls.Certificate{cert},
 	}, nil
 }
