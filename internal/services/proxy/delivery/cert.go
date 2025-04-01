@@ -8,9 +8,7 @@ import (
 )
 
 func genCert(host string, serial *big.Int) ([]byte, error) {
-	scriptPath := "scripts/gen_cert.sh"
-
-	cmd := exec.Command(scriptPath, host, fmt.Sprintf("%d", serial))
+	cmd := exec.Command("scripts/gen_cert.sh", host, fmt.Sprintf("%d", serial))
 
 	var certOut, errOut bytes.Buffer
 	cmd.Stdout = &certOut
