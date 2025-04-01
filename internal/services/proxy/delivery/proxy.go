@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/daronenko/https-proxy/internal/app/config"
 	"github.com/rs/zerolog/log"
@@ -67,8 +68,6 @@ func (d *Proxy) httpsStrategy(clientConn net.Conn, req *http.Request) {
 	}
 	defer targetConn.Close()
 
-	hideProxy(req)
-
 	if err := d.forwardRequest(tlsClientConn, targetConn, request); err != nil {
 		log.Err(err).Msg("failed to forward request from client to target connection over tls")
 		return
@@ -92,15 +91,11 @@ func (d *Proxy) httpStrategy(clientConn net.Conn, req *http.Request) {
 }
 
 func (d *Proxy) forwardRequest(clientConn, targetConn net.Conn, req *http.Request) error {
-	if err := req.Write(targetConn); err != nil {
-		log.Err(err).Msg("failed to write request from client to target connection")
-		return fmt.Errorf("write request: %w", err)
-	}
+	hideProxy(req)
 
-	resp, err := http.ReadResponse(bufio.NewReader(targetConn), req)
+	resp, err := d.sendRequest(targetConn, req)
 	if err != nil {
-		log.Err(err).Msg("failed to read response from target connection")
-		return fmt.Errorf("read response: %w", err)
+		return fmt.Errorf("send request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -112,8 +107,23 @@ func (d *Proxy) forwardRequest(clientConn, targetConn net.Conn, req *http.Reques
 	return nil
 }
 
+func (d *Proxy) sendRequest(targetConn net.Conn, req *http.Request) (*http.Response, error) {
+	if err := req.Write(targetConn); err != nil {
+		log.Err(err).Msg("failed to write request from client to target connection")
+		return nil, fmt.Errorf("write request: %w", err)
+	}
+
+	resp, err := http.ReadResponse(bufio.NewReader(targetConn), req)
+	if err != nil {
+		log.Err(err).Msg("failed to read response from target connection")
+		return nil, fmt.Errorf("read response: %w", err)
+	}
+
+	return resp, nil
+}
+
 func (d *Proxy) tcpConn(address string) (net.Conn, error) {
-	conn, err := net.DialTimeout("tcp", address, http.DefaultClient.Timeout)
+	conn, err := net.DialTimeout("tcp", address, 10*time.Second)
 	if err != nil {
 		log.Err(err).Msg("failed to dial tcp connection")
 		return nil, fmt.Errorf("tcp dial: %w", err)
@@ -123,7 +133,8 @@ func (d *Proxy) tcpConn(address string) (net.Conn, error) {
 }
 
 func (d *Proxy) secureConn(address string, tlsConfig *tls.Config) (net.Conn, error) {
-	conn, err := tls.Dial("tcp", address, tlsConfig)
+	dialer := &net.Dialer{Timeout: 10 * time.Second}
+	conn, err := tls.DialWithDialer(dialer, "tcp", address, tlsConfig)
 	if err != nil {
 		log.Err(err).Msg("failed to dial tls over tcp connection")
 		return nil, fmt.Errorf("tls dial: %w", err)
