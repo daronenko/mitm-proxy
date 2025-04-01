@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/tls"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -55,22 +56,26 @@ func (d *Proxy) httpsStrategy(clientConn net.Conn, req *http.Request) {
 	tlsClientConn := tls.Server(clientConn, tlsConfig)
 	defer tlsClientConn.Close()
 
-	request, err := http.ReadRequest(bufio.NewReader(tlsClientConn))
-	if err != nil {
-		log.Err(err).Msg("failed to read request")
-		return
-	}
+	for {
+		req, err := http.ReadRequest(bufio.NewReader(tlsClientConn))
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.Err(err).Msg("failed to read request")
+			return
+		}
 
-	targetConn, err := d.secureConn(net.JoinHostPort(request.Host, getPort(req.URL)), tlsConfig)
-	if err != nil {
-		log.Err(err).Msg("failed to establish tls connection")
-		return
-	}
-	defer targetConn.Close()
+		targetConn, err := d.secureConn(net.JoinHostPort(req.Host, "443"), tlsConfig)
+		if err != nil {
+			log.Err(err).Msg("failed to establish tls connection")
+			return
+		}
+		defer targetConn.Close()
 
-	if err := d.forwardRequest(tlsClientConn, targetConn, request); err != nil {
-		log.Err(err).Msg("failed to forward request from client to target connection over tls")
-		return
+		if err := d.forwardRequest(tlsClientConn, targetConn, req); err != nil {
+			log.Err(err).Msg("failed to forward request from client to target connection over tls")
+			return
+		}
 	}
 }
 
@@ -81,8 +86,6 @@ func (d *Proxy) httpStrategy(clientConn net.Conn, req *http.Request) {
 		return
 	}
 	defer targetConn.Close()
-
-	hideProxy(req)
 
 	if err := d.forwardRequest(clientConn, targetConn, req); err != nil {
 		log.Err(err).Msg("failed to forward request from client to target connection")
@@ -136,7 +139,7 @@ func (d *Proxy) secureConn(address string, tlsConfig *tls.Config) (net.Conn, err
 	dialer := &net.Dialer{Timeout: 10 * time.Second}
 	conn, err := tls.DialWithDialer(dialer, "tcp", address, tlsConfig)
 	if err != nil {
-		log.Err(err).Msg("failed to dial tls over tcp connection")
+		log.Err(err).Msg("failed to dial tls connection")
 		return nil, fmt.Errorf("tls dial: %w", err)
 	}
 
@@ -168,5 +171,8 @@ func (d *Proxy) createTLSConfig(certBytes []byte) (*tls.Config, error) {
 		return nil, fmt.Errorf("tls x509 key pair: %w", err)
 	}
 
-	return &tls.Config{Certificates: []tls.Certificate{cert}}, nil
+	return &tls.Config{
+		Certificates:       []tls.Certificate{cert},
+		InsecureSkipVerify: true,
+	}, nil
 }
