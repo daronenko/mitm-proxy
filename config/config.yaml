@@ -1,0 +1,16 @@
+devMode: true
+
+app:
+  proxyServer:
+    address: 0.0.0.0:8080
+  
+    tls:
+      keyPath: /certs/cert.key
+      certPath: /certs/hosts
+
+  apiServer:
+    address: 0.0.0.0:8000
+
+  logger:
+    traceLevel: true
+    stdoutOnly: true
