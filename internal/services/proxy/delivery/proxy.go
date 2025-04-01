@@ -70,12 +70,13 @@ func (d *Proxy) httpsStrategy(clientConn net.Conn, req *http.Request) {
 			log.Err(err).Msg("failed to establish tls connection")
 			return
 		}
-		defer targetConn.Close()
 
 		if err := d.forwardRequest(tlsClientConn, targetConn, req); err != nil {
 			log.Err(err).Msg("failed to forward request from client to target connection over tls")
 			return
 		}
+
+		targetConn.Close()
 	}
 }
 
