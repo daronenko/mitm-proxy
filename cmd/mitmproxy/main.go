@@ -44,9 +44,9 @@ func run(proxyServer *httpserver.ProxyServer, apiServer *httpserver.ApiServer, c
 		OnStop: func(ctx context.Context) error {
 			log.Info().Msg("shutting down servers...")
 
-			// if err := proxyServer.Shutdown(ctx); err != nil {
-			// 	log.Error().Err(err).Msg("failed to shutdown proxy server")
-			// }
+			if err := proxyServer.Shutdown(ctx); err != nil {
+				log.Error().Err(err).Msg("failed to shutdown proxy server")
+			}
 
 			if err := apiServer.Shutdown(ctx); err != nil {
 				log.Error().Err(err).Msg("failed to shutdown api server")
