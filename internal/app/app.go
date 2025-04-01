@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/daronenko/https-proxy/internal/app/config"
-	"github.com/daronenko/https-proxy/internal/server"
+	"github.com/daronenko/https-proxy/internal/httpserver"
 	"github.com/daronenko/https-proxy/internal/services/api"
 	"github.com/daronenko/https-proxy/internal/services/proxy"
 	"github.com/daronenko/https-proxy/pkg/logger"
@@ -27,7 +27,7 @@ func Options(extraOpts ...fx.Option) []fx.Option {
 
 		fx.WithLogger(logger.Fx),
 
-		server.Module(),
+		httpserver.Module(),
 
 		proxy.Module(),
 		api.Module(),

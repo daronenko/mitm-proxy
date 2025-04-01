@@ -6,7 +6,7 @@ import (
 
 func Module() fx.Option {
 	return fx.Module(
-		"proxy.delivery.v1",
-		fx.Provide(New),
+		"api.delivery",
+		fx.Invoke(Init),
 	)
 }

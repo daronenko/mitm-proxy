@@ -7,7 +7,7 @@ import (
 
 	"github.com/daronenko/https-proxy/internal/app"
 	"github.com/daronenko/https-proxy/internal/app/config"
-	"github.com/daronenko/https-proxy/internal/server/httpserver"
+	"github.com/daronenko/https-proxy/internal/httpserver"
 	"github.com/rs/zerolog/log"
 	"go.uber.org/fx"
 )

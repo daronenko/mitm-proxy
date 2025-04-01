@@ -10,7 +10,7 @@ COPY . .
 ENV CGO_ENABLED=0 GOOS=linux GO111MODULE=on GOCACHE=/root/.cache/go-build
 
 RUN --mount=type=cache,target="/root/.cache/go-build" \
-    go build -mod=vendor -o ./bin/proxy ./cmd/proxy/main.go
+    go build -mod=vendor -o ./bin/mitmproxy ./cmd/mitmproxy/main.go
 
 FROM ubuntu:latest
 
@@ -20,8 +20,8 @@ WORKDIR /
 
 VOLUME [ "/certs" ]
 
-COPY --from=builder /app/bin/proxy /proxy
-COPY --from=builder /app/config/config.yaml /etc/proxy/config.yaml
+COPY --from=builder /app/bin/mitmproxy /mitmproxy
+COPY --from=builder /app/config/config.yaml /etc/mitmproxy/config.yaml
 COPY --from=builder /app/scripts/ /scripts/
 COPY --from=builder /etc/passwd /etc/passwd
 
@@ -31,4 +31,4 @@ RUN update-ca-certificates
 EXPOSE 8000
 EXPOSE 8080
 
-ENTRYPOINT [ "/proxy", "--config", "/etc/proxy/config.yaml" ]
+ENTRYPOINT [ "/proxy", "--config", "/etc/mitmproxy/config.yaml" ]

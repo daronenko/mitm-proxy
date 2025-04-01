@@ -6,8 +6,7 @@ import (
 	"net/http"
 
 	"github.com/daronenko/https-proxy/internal/app/config"
-	"github.com/daronenko/https-proxy/internal/server/httprouter"
-	httpdelivery "github.com/daronenko/https-proxy/internal/services/proxy/delivery/v1"
+	httpdelivery "github.com/daronenko/https-proxy/internal/services/proxy/delivery"
 	"github.com/rs/zerolog/log"
 )
 
@@ -46,7 +45,7 @@ type ApiServer struct {
 	http.Server
 }
 
-func NewApiServer(api *httprouter.ApiRouter, config *config.Config) *ApiServer {
+func NewApiServer(api *ApiRouter, config *config.Config) *ApiServer {
 	return &ApiServer{
 		http.Server{
 			Handler: api,

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/daronenko/https-proxy/internal/app/config"
-	"github.com/daronenko/https-proxy/internal/server/httprouter"
+	"github.com/daronenko/https-proxy/internal/httpserver"
 	"go.uber.org/fx"
 )
 
@@ -13,7 +13,7 @@ type Api struct {
 	Conf *config.Config
 }
 
-func Init(d Api, api *httprouter.ApiRouter) {
+func Init(d Api, api *httpserver.ApiRouter) {
 	api.HandleFunc("/ping", d.Ping).Methods("GET")
 }
 

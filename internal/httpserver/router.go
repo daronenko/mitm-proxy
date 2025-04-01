@@ -1,4 +1,4 @@
-package httprouter
+package httpserver
 
 import (
 	"github.com/gorilla/mux"
@@ -8,7 +8,7 @@ type ApiRouter struct {
 	*mux.Router
 }
 
-func New() *ApiRouter {
+func NewApiRouter() *ApiRouter {
 	return &ApiRouter{
 		mux.NewRouter(),
 	}

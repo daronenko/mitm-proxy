@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	httpdelivery "github.com/daronenko/https-proxy/internal/services/proxy/delivery/v1"
+	httpdelivery "github.com/daronenko/https-proxy/internal/services/proxy/delivery"
 	"go.uber.org/fx"
 )
 

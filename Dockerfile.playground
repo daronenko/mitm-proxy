@@ -25,6 +25,6 @@ RUN cp certs/ca.crt /usr/local/share/ca-certificates/ \
     && update-ca-certificates
 
 RUN --mount=type=cache,target="/root/.cache/go-build" \
-    go build -mod=vendor -o ./bin/proxy ./cmd/proxy/main.go
+    go build -mod=vendor -o ./bin/mitmproxy ./cmd/mitmproxy/main.go
 
-CMD ["./bin/proxy", "--config", "config/config.yaml" ]
+CMD ["./bin/mitmproxy", "--config", "config/config.yaml" ]
