@@ -10,7 +10,7 @@ COPY . .
 ENV CGO_ENABLED=0 GOOS=linux GO111MODULE=on GOCACHE=/root/.cache/go-build
 
 RUN --mount=type=cache,target="/root/.cache/go-build" \
-    go build -mod=vendor -o ./bin/proxy ./cmd/proxy/main.go
+    go build -o ./bin/proxy ./cmd/proxy/main.go
 
 FROM ubuntu:latest
 
