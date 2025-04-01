@@ -127,7 +127,7 @@ func (d *Proxy) sendRequest(targetConn net.Conn, req *http.Request) (*http.Respo
 }
 
 func (d *Proxy) tcpConn(address string) (net.Conn, error) {
-	conn, err := net.DialTimeout("tcp", address, 10*time.Second)
+	conn, err := net.DialTimeout("tcp", address, 5*time.Second)
 	if err != nil {
 		log.Err(err).Msg("failed to dial tcp connection")
 		return nil, fmt.Errorf("tcp dial: %w", err)
@@ -137,7 +137,7 @@ func (d *Proxy) tcpConn(address string) (net.Conn, error) {
 }
 
 func (d *Proxy) secureConn(address string, tlsConfig *tls.Config) (net.Conn, error) {
-	dialer := &net.Dialer{Timeout: 10 * time.Second}
+	dialer := &net.Dialer{Timeout: 5 * time.Second}
 	conn, err := tls.DialWithDialer(dialer, "tcp", address, tlsConfig)
 	if err != nil {
 		log.Err(err).Msg("failed to dial tls connection")
