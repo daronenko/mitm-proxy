@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-docker build -t mitm-proxy . && docker run -p 8000:8000 -p 8080:8080 -v ./certs:/certs --name mitm-proxy --rm -it mitm-proxy
+docker compose build
+docker compose up
