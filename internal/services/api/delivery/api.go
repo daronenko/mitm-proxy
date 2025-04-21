@@ -24,7 +24,7 @@ type Api struct {
 	fx.In
 	Conf *config.Config
 	Repo *repo.Request
-)
+}
 
 func Init(d Api, api *httpserver.ApiRouter) {
 	api.HandleFunc("/ping", d.Ping).Methods("GET")
