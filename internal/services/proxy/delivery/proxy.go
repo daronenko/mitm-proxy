@@ -2,6 +2,8 @@ package httpdelivery
 
 import (
 	"bufio"
+	"bytes"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -13,16 +15,19 @@ import (
 	"time"
 
 	"github.com/daronenko/https-proxy/internal/app/config"
+	"github.com/daronenko/https-proxy/internal/model"
+	"github.com/daronenko/https-proxy/internal/services/api/repo"
 	"github.com/rs/zerolog/log"
 )
 
 type Proxy struct {
+	repo      *repo.Request
 	conf      *config.Config
 	key       []byte
 	certCache sync.Map
 }
 
-func New(conf *config.Config) (*Proxy, error) {
+func New(repo *repo.Request, conf *config.Config) (*Proxy, error) {
 	key, err := os.ReadFile(conf.App.ProxyServer.TLS.KeyPath)
 	if err != nil {
 		log.Err(err).Msg("failed to read tls key")
@@ -30,6 +35,7 @@ func New(conf *config.Config) (*Proxy, error) {
 	}
 
 	return &Proxy{
+		repo: repo,
 		conf: conf,
 		key:  key,
 	}, nil
@@ -102,7 +108,30 @@ func (d *Proxy) forwardRequest(clientConn, targetConn net.Conn, req *http.Reques
 	if err != nil {
 		return fmt.Errorf("send request: %w", err)
 	}
-	defer resp.Body.Close()
+	originalBody := resp.Body
+
+	bodyBytes, err := io.ReadAll(originalBody)
+	if err != nil {
+		originalBody.Close()
+		return fmt.Errorf("read response body: %w", err)
+	}
+	originalBody.Close()
+
+	resp.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+
+	respCopy := *resp // shallow copy
+	respCopy.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+
+	go func(respCopy *http.Response) {
+		transaction := &model.Transaction{
+			Request:   model.NewRequest(req),
+			Response:  model.NewResponse(respCopy),
+			CreatedAt: time.Now(),
+		}
+		if _, err := d.repo.CreateTransaction(context.Background(), transaction); err != nil {
+			log.Err(err).Msg("failed to store transaction")
+		}
+	}(&respCopy)
 
 	if err := resp.Write(clientConn); err != nil {
 		log.Err(err).Msg("failed to write response from target to client connection")

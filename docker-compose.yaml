@@ -1,0 +1,42 @@
+networks:
+  mongo-net:
+    name: mongo-net
+    driver: bridge
+
+services:
+  proxy:
+    container_name: proxy-container
+    restart: on-failure:3
+    build:
+      dockerfile: ./Dockerfile
+    environment:
+      - APP_MONGO_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - APP_MONGO_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - 8080:8080
+      - 8000:8000
+    volumes:
+      - ./certs/:/certs/
+    networks:
+      - mongo-net
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo-container
+    env_file: .env
+    restart: on-failure:3
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 3s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - ./db/:/data/db/
+      - ./logs/:/var/log/mongodb/
+    networks:
+      - mongo-net

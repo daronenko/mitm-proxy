@@ -7,6 +7,7 @@ import (
 
 	"github.com/daronenko/https-proxy/internal/app/config"
 	"github.com/daronenko/https-proxy/internal/httpserver"
+	"github.com/daronenko/https-proxy/internal/infra"
 	"github.com/daronenko/https-proxy/internal/services/api"
 	"github.com/daronenko/https-proxy/internal/services/proxy"
 	"github.com/daronenko/https-proxy/pkg/logger"
@@ -27,6 +28,7 @@ func Options(extraOpts ...fx.Option) []fx.Option {
 
 		fx.WithLogger(logger.Fx),
 
+		infra.Module(),
 		httpserver.Module(),
 
 		proxy.Module(),

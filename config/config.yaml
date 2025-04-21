@@ -14,3 +14,12 @@ app:
   logger:
     traceLevel: true
     stdoutOnly: true
+  
+  mongo:
+    uri: mongodb://mongo-container:27017
+    username:
+    password:
+    database: proxy
+
+    collections:
+      transactions: transactions
